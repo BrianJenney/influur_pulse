@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Influur Pulse
+
+A modern influencer marketing platform built with Next.js, Prisma, and TypeScript.
+
+## Features
+
+-   Type-safe API routes with Zod validation
+-   Modern form handling with React Hook Form
+-   Responsive UI with Tailwind CSS
+-   Database management with Prisma
+-   Authentication and authorization
+-   Campaign management
+-   Influencer discovery and management
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+-   Node.js 20 or later
+-   Yarn package manager
+
+### Installation
+
+1. Clone the repository:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/influur_pulse.git
+cd influur_pulse
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+yarn install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Set up environment variables:
 
-## Learn More
+```bash
+cp .env.example .env
+```
 
-To learn more about Next.js, take a look at the following resources:
+Edit `.env` with your database credentials and other configuration.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. Set up the database:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+yarn prisma generate
+yarn prisma db push
+```
 
-## Deploy on Vercel
+5. Start the development server:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+yarn dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3000](http://localhost:3000)
+
+````
+
+## Development
+
+### Database Management
+
+-   Generate Prisma client:
+
+```bash
+yarn prisma generate
+````
+
+prisma db push
+
+```
+
+### Type Safety
+
+The project uses TypeScript for type safety throughout the codebase. Key type-safe features include:
+
+-   API routes with Zod validation
+-   Form handling with React Hook Form and Zod
+-   Database queries with Prisma
+```

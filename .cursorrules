@@ -1,0 +1,89 @@
+# Influur Pulse Project Guidelines
+
+## TypeScript & Zod
+
+-   Use TypeScript for all new code
+-   Prefer Zod for runtime type validation
+-   Define schemas in `/lib/schemas`
+-   Use our RouteConfig pattern for new API routes:
+
+```typescript
+export const routes = {
+  ROUTE_NAME: {
+    path: '/api/endpoint',
+    method: 'GET' | 'POST',
+    inputSchema: z.object({...}),
+    outputSchema: z.object({...}),
+    headers?: Record<string, string>
+  }
+} as const satisfies Record<string, RouteConfig>;
+```
+
+## Component Architecture
+
+-   Use Server Components by default
+-   Only use Client Components when necessary (interactivity, browser APIs)
+-   Keep Client Components as leaf nodes
+-   Example structure:
+
+```
+app/
+  page.tsx (Server)
+  components/
+    ClientComponent.tsx
+    ServerComponent.tsx
+```
+
+## Code Organization
+
+-   Follow Single Responsibility Principle
+-   Keep files under 200 lines when possible
+-   Place utility functions in `/lib`
+-   Use index files for clean exports
+
+## API & Data Fetching
+
+-   Prefer direct Prisma queries in Server Components
+-   Only create API routes when:
+    -   Client-side data fetching is needed
+    -   Third-party API integration is required
+    -   Complex data transformations are needed
+-   Use our RouteConfig pattern for API routes
+
+## Libraries & Utilities
+
+-   Use lodash for utility functions
+-   Add new libraries to `/lib`
+-   Keep third-party dependencies minimal
+-   Document non-obvious library usage
+
+## Comments & Documentation
+
+-   Prefer self-documenting code
+-   Only add comments for:
+    -   Complex business logic
+    -   Non-obvious workarounds
+    -   Important architectural decisions
+-   Use JSDoc for public APIs
+
+## File Structure
+
+```
+app/
+  api/           # API routes
+  components/    # Shared components
+  lib/          # Utilities and schemas
+  (routes)/     # Page routes
+prisma/         # Database schema
+public/         # Static assets
+```
+
+## Best Practices
+
+-   Use async/await for all async operations
+-   Handle errors at the appropriate level
+-   Use proper TypeScript types
+-   Follow React best practices
+-   Keep components small and focused
+-   Use proper naming conventions
+-   Write tests for critical functionality
