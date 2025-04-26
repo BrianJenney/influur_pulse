@@ -1,25 +1,30 @@
 'use client';
 
-import { useForm, UseFormProps, UseFormReturn } from 'react-hook-form';
+import {
+	FieldValues,
+	useForm,
+	UseFormProps,
+	UseFormReturn,
+} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 
-interface FormProps<TInput, TOutput> {
-	schema: z.ZodType<TOutput, z.ZodTypeDef, TInput>;
+interface FormProps<TOutput extends FieldValues> {
+	schema: z.ZodType<TOutput, z.ZodTypeDef, TOutput>;
 	onSubmit: (data: TOutput) => Promise<void>;
 	children: (methods: UseFormReturn<TOutput>) => React.ReactNode;
 	defaultValues?: UseFormProps<TOutput>['defaultValues'];
 	className?: string;
 }
 
-export function Form<TInput, TOutput>({
+export function Form<TOutput extends FieldValues>({
 	schema,
 	onSubmit,
 	children,
 	defaultValues,
 	className = '',
-}: FormProps<TInput, TOutput>) {
+}: FormProps<TOutput>) {
 	const methods = useForm<TOutput>({
 		resolver: zodResolver(schema),
 		defaultValues,

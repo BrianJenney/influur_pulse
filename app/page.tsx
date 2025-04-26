@@ -4,6 +4,9 @@ import { Input } from '@/app/components/ui/Input';
 import { Button } from '@/app/components/ui/Button';
 import { useState } from 'react';
 import { fetchRouteWithBody } from '@/app/api/routes';
+import { Form } from '@/app/components/forms/Form';
+import { searchSchema } from '@/app/schemas/search';
+import { useForm } from 'react-hook-form';
 
 interface Song {
 	id: string;
@@ -14,21 +17,21 @@ interface Song {
 	spotifyUrl: string;
 }
 
+type SearchFormData = z.infer<typeof searchSchema>;
+
 export default function HomePage() {
-	const [query, setQuery] = useState('');
 	const [songs, setSongs] = useState<Song[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const handleSearch = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!query.trim()) return;
-
+	const handleSearch = async ({ query }: SearchFormData) => {
 		setIsLoading(true);
 		setError(null);
 
 		try {
-			const results = await fetchRouteWithBody('SEARCH_SONGS', { query });
+			const results = await fetchRouteWithBody('SEARCH_SONGS', {
+				query,
+			});
 			setSongs(results);
 		} catch (err) {
 			setError('Failed to search songs. Please try again.');
@@ -51,24 +54,31 @@ export default function HomePage() {
 				</div>
 
 				<div className='mt-8 bg-white py-8 px-4 rounded-xl sm:px-10'>
-					<form onSubmit={handleSearch} className='space-y-6'>
-						<div className='flex gap-2 flex-col'>
-							<Input
-								type='text'
-								placeholder='Search for a song...'
-								className='flex-1 w-full'
-								value={query}
-								onChange={(e) => setQuery(e.target.value)}
-							/>
-							<Button
-								type='submit'
-								className='w-full'
-								disabled={isLoading}
-							>
-								{isLoading ? 'Searching...' : 'Search'}
-							</Button>
-						</div>
-					</form>
+					<Form
+						schema={searchSchema}
+						onSubmit={handleSearch}
+						defaultValues={{ query: '' }}
+					>
+						{(methods) => (
+							<div className='space-y-6'>
+								<div className='flex gap-2 flex-col'>
+									<Input
+										type='text'
+										placeholder='Search for a song...'
+										className='flex-1 w-full'
+										{...methods.register('query')}
+									/>
+									<Button
+										type='submit'
+										className='w-full'
+										disabled={isLoading}
+									>
+										{isLoading ? 'Searching...' : 'Search'}
+									</Button>
+								</div>
+							</div>
+						)}
+					</Form>
 
 					{error && (
 						<div className='mt-4 text-red-500 text-sm text-center'>

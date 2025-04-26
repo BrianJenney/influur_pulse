@@ -1,0 +1,32 @@
+---
+description: when building or editing an LLM agent to perform a task
+globs: 
+alwaysApply: false
+---
+# Agent Development Guidelines
+
+## Architecture
+
+- Follow Single Responsibility Principle (SRP)
+- Each agent should do one thing well
+- Compose agents for complex tasks
+- Use agent chaining for multi-step processes
+
+## Performance & Cost
+
+- Use `gpt-4o-mini` for simple tasks
+- Reserve `gpt-4o` for complex reasoning
+- System prompts can be cached - so avoid dynamic system prompts (don't use string interpolation basically)
+
+## Type Safety
+
+- Use `zodResponseFormat` for structured outputs
+- Define schemas in `/lib/schemas`
+- Validate inputs and outputs
+- Use TypeScript for type safety
+
+## Prompt Engineering
+
+- Include examples in prompts
+- Ask for reasoning to improve results
+- Use markdown formatting
