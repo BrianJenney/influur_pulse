@@ -44,7 +44,7 @@ export default function HomePage() {
 	return (
 		<div className='min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8'>
 			<div className='max-w-md w-full space-y-8'>
-				<div className='text-center'>
+				<div className='text-center pt-4'>
 					<h1 className='text-4xl font-semibold text-gray-800'>
 						Track what matters. Amplify what works.
 					</h1>

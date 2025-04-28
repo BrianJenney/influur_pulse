@@ -6,8 +6,9 @@ export type RouteConfig = {
 	inputSchema: z.ZodTypeAny;
 	outputSchema: z.ZodTypeAny;
 	tags?: string[];
-	headers?: Record<string, string> | null;
+	headers?: Record<string, string>;
 	isExternal?: boolean;
+	responseType?: 'json' | 'csv';
 };
 
 export const routes = {
@@ -16,6 +17,8 @@ export const routes = {
 		path: '/api/songs' as string,
 		method: 'POST',
 		isExternal: false,
+		headers: {},
+		responseType: 'json',
 		inputSchema: z.object({
 			query: z.string(),
 		}),
@@ -36,6 +39,8 @@ export const routes = {
 		path: '/pulse/creators/:id',
 		method: 'GET',
 		isExternal: true,
+		headers: {},
+		responseType: 'json',
 		inputSchema: z.object({
 			id: z.number(),
 		}),
@@ -69,11 +74,18 @@ export async function fetchRouteWithBody<KEY extends keyof typeof routes>(
 		fullUrl = config.path;
 	}
 
+	// Setup base headers
+	const headers: Record<string, string> = {
+		'Content-Type': 'application/json',
+		'Influur-Version': process.env.INFLUUR_VERSION || '1.0.0',
+	};
+
 	// Prepare the request
 	const requestInit: RequestInit = {
 		method: config.method,
 		headers: {
-			'Content-Type': 'application/json',
+			...headers,
+			...(config.headers || {}), // Allow route-specific headers to override defaults
 		},
 	};
 
@@ -93,14 +105,27 @@ export async function fetchRouteWithBody<KEY extends keyof typeof routes>(
 
 	const response = await fetch(fullUrl, {
 		...requestInit,
+		cache: 'no-store', // Disable caching by default for API calls
 	});
 
 	if (!response.ok) {
-		throw new Error(
-			`${key} API (${fullUrl}) returned ${
-				response.status
-			}! ${await response.text()}`
-		);
+		let errorMessage = `${key} API (${fullUrl}) returned ${response.status}`;
+		try {
+			const errorBody = await response.json();
+			errorMessage += ` - ${JSON.stringify(errorBody)}`;
+		} catch {
+			errorMessage += ` - ${await response.text()}`;
+		}
+		throw new Error(errorMessage);
+	}
+
+	// Check if response is CSV based on Content-Type header
+	const isCsvResponse =
+		response.headers.get('Content-Type')?.includes('text/csv') ?? false;
+
+	// If route is configured for CSV or Content-Type indicates CSV
+	if (isCsvResponse) {
+		return config.outputSchema.parse(await response.text());
 	}
 
 	return config.outputSchema.parse(await response.json());
