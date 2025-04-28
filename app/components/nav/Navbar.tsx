@@ -32,7 +32,7 @@ export function Navbar() {
 								Campaigns
 							</Link>
 							<Link
-								href='/'
+								href='/campaign/create'
 								className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${
 									isActive('/campaigns/create')
 										? 'border-primary-500 text-gray-900'

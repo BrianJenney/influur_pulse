@@ -3,7 +3,7 @@
 import { Input } from '@/app/components/ui/Input';
 import { Button } from '@/app/components/ui/Button';
 import { useState } from 'react';
-import { fetchRouteWithBody } from '@/app/api/routes';
+import { fetchRouteWithBody } from '@/app/api/utils';
 import { Form } from '@/app/components/forms/Form';
 import { searchSchema } from '@/app/schemas/search';
 import { z } from 'zod';

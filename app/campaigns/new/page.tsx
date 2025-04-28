@@ -2,6 +2,7 @@ import prisma from '@/app/libs/prisma';
 import { parsePriceRange } from '@/app/utils/price';
 import { prismaToPOJO } from '@/app/utils/nextjs';
 import { users_report } from '@prisma/client';
+import Image from 'next/image';
 
 type SearchParams = {
 	gender?: string;
@@ -102,7 +103,7 @@ async function getFilteredInfluencers(
 	return sortedInfluencers.slice(0, 20);
 }
 
-export default async function NewCampaignPage({
+export default async function InfluencerSearchPage({
 	searchParams,
 }: {
 	searchParams: SearchParams;
@@ -111,7 +112,7 @@ export default async function NewCampaignPage({
 
 	return (
 		<div className='container mx-auto px-4 py-8'>
-			<h1 className='text-3xl font-bold mb-8'>Create New Campaign</h1>
+			<h1 className='text-3xl font-bold mb-8'>Find Influencers</h1>
 
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
 				{influencers.map((influencer) => (
@@ -121,10 +122,12 @@ export default async function NewCampaignPage({
 					>
 						<div className='flex items-center gap-4'>
 							{influencer.profile_pic && (
-								<img
+								<Image
 									src={influencer.profile_pic}
 									alt={influencer.full_name || 'Influencer'}
 									className='w-16 h-16 rounded-full'
+									width={64}
+									height={64}
 								/>
 							)}
 							<div>

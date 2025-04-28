@@ -1,15 +1,6 @@
 import { z } from 'zod';
-
-export type RouteConfig = {
-	path: string;
-	method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-	inputSchema: z.ZodTypeAny;
-	outputSchema: z.ZodTypeAny;
-	tags?: string[];
-	headers?: Record<string, string>;
-	isExternal?: boolean;
-	responseType?: 'json' | 'csv';
-};
+import { messageSchema } from '../schemas/message';
+import { RouteConfig } from './types';
 
 export const routes = {
 	// Internal routes (relative to Next.js app)
@@ -34,99 +25,120 @@ export const routes = {
 		),
 	},
 
+	CAMPAIGN_AGENT: {
+		path: '/api/campaign/agent',
+		method: 'POST',
+		isExternal: false,
+		headers: {},
+		responseType: 'json',
+		inputSchema: z.object({
+			message: z.string(),
+			messageHistory: z.array(messageSchema),
+			preferences: z.object({
+				gender: z.enum(['male', 'female', 'all']).optional().nullable(),
+				location: z.string().optional().nullable(),
+				priceRange: z
+					.object({
+						min: z.number(),
+						max: z.number(),
+					})
+					.optional()
+					.nullable(),
+				songUrl: z.string().url().optional().nullable(),
+				goals: z.array(z.string()).optional().nullable(),
+			}),
+		}),
+		outputSchema: z.object({
+			message: z.string(),
+			updatedPreferences: z.object({
+				gender: z.enum(['male', 'female', 'all']).optional().nullable(),
+				location: z.string().optional().nullable(),
+				priceRange: z
+					.object({
+						min: z.number(),
+						max: z.number(),
+					})
+					.optional()
+					.nullable(),
+				songUrl: z.string().url().optional().nullable(),
+				goals: z.array(z.string()).optional().nullable(),
+			}),
+			complete: z.boolean(),
+			response: z.union([
+				z.object({
+					influencers: z
+						.array(
+							z.object({
+								id: z.string(),
+								name: z.string(),
+								platform: z.string(),
+								followers: z.number(),
+								engagementRate: z.number(),
+								niche: z.string(),
+								location: z.string(),
+								price: z.number(),
+								website: z.string().nullish(),
+								image: z.string(),
+								handle: z.string(),
+								matchScore: z.number(),
+								reasoning: z.string(),
+							})
+						)
+						.max(7),
+					strategy: z.string(),
+					songSnippet: z.object({
+						startTimestamp: z.string().regex(/^\d{2}:\d{2}:\d{2}$/),
+						endTimestamp: z.string().regex(/^\d{2}:\d{2}:\d{2}$/),
+						reason: z.string(),
+					}),
+					creativeIdeas: z
+						.array(
+							z.object({
+								title: z.string(),
+								description: z.string(),
+								type: z.enum([
+									'dance',
+									'lipsync',
+									'transition',
+									'story',
+									'challenge',
+									'other',
+								]),
+								difficulty: z.enum(['easy', 'medium', 'hard']),
+								estimatedViews: z.number(),
+							})
+						)
+						.min(3),
+				}),
+				z.null(),
+			]),
+		}),
+	},
+
 	// External routes (using API_BASE_URL)
-	GET_CREATOR: {
-		path: '/pulse/creators/:id',
-		method: 'GET',
+	REGISTER: {
+		path: '/api/user/register',
+		method: 'POST',
 		isExternal: true,
 		headers: {},
 		responseType: 'json',
 		inputSchema: z.object({
-			id: z.number(),
+			pulseUserEmail: z.string().email(),
+			pulseUserName: z.string(),
+			password: z.string(),
 		}),
-		outputSchema: z.any(),
-		tags: [],
+		outputSchema: z.object({
+			message: z.string(),
+			detail: z
+				.object({
+					id: z.number(),
+					email: z.string().email(),
+					name: z.string(),
+					token: z.string(),
+					image: z.string().nullable(),
+					country: z.string().nullable(),
+				})
+				.optional(),
+		}),
 	},
 } satisfies Record<string, RouteConfig>;
-
-export async function fetchRouteWithBody<KEY extends keyof typeof routes>(
-	key: KEY,
-	input: z.infer<(typeof routes)[KEY]['inputSchema']>
-): Promise<z.infer<(typeof routes)[KEY]['outputSchema']>> {
-	const config = routes[key];
-
-	// Construct the full URL based on whether the route is external or internal
-	let fullUrl: string;
-	if (config.isExternal) {
-		if (!process.env.API_BASE_URL) {
-			throw new Error('API_BASE_URL environment variable is not set');
-		}
-		let urlPath = config.path;
-		// Replace path parameters
-		Object.entries(input).forEach(([key, value]) => {
-			if (urlPath.includes(`:${key}`)) {
-				urlPath = urlPath.replace(`:${key}`, String(value));
-			}
-		});
-		fullUrl = new URL(urlPath, process.env.API_BASE_URL).toString();
-	} else {
-		// For internal routes, use the path as is
-		fullUrl = config.path;
-	}
-
-	// Setup base headers
-	const headers: Record<string, string> = {
-		'Content-Type': 'application/json',
-		'Influur-Version': process.env.INFLUUR_VERSION || '1.0.0',
-	};
-
-	// Prepare the request
-	const requestInit: RequestInit = {
-		method: config.method,
-		headers: {
-			...headers,
-			...(config.headers || {}), // Allow route-specific headers to override defaults
-		},
-	};
-
-	// Handle query parameters for GET requests
-	if (config.method === 'GET') {
-		const url = new URL(fullUrl);
-		Object.entries(input).forEach(([key, value]) => {
-			// Only add as query param if it's not a path parameter
-			if (value !== undefined && !config.path.includes(`:${key}`)) {
-				url.searchParams.append(key, String(value));
-			}
-		});
-		fullUrl = url.toString();
-	} else {
-		requestInit.body = JSON.stringify(input);
-	}
-
-	const response = await fetch(fullUrl, {
-		...requestInit,
-		cache: 'no-store', // Disable caching by default for API calls
-	});
-
-	if (!response.ok) {
-		let errorMessage = `${key} API (${fullUrl}) returned ${response.status}`;
-		try {
-			const errorBody = await response.json();
-			errorMessage += ` - ${JSON.stringify(errorBody)}`;
-		} catch {
-			errorMessage += ` - ${await response.text()}`;
-		}
-		throw new Error(errorMessage);
-	}
-
-	// Check if response is CSV based on Content-Type header
-	const isCsvResponse =
-		response.headers.get('Content-Type')?.includes('text/csv') ?? false;
-
-	// If route is configured for CSV or Content-Type indicates CSV
-	if (isCsvResponse) {
-		return config.outputSchema.parse(await response.text());
-	}
-
-	return config.outputSchema.parse(await response.json());
-}

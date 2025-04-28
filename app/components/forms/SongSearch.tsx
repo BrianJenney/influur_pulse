@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/app/components/ui/Input';
-import { routes, fetchRouteWithBody } from '@/app/api/routes';
+import { fetchRouteWithBody } from '@/app/api/utils';
+import { routes } from '@/app/api/routes';
 import { z } from 'zod';
 import Image from 'next/image';
 

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { ZodError, z } from 'zod';
-import { RouteConfig, routes } from './routes';
-
+import { routes } from './routes';
+import { RouteConfig } from './types';
 export class RouteError extends Error {
 	constructor(
 		message: string,

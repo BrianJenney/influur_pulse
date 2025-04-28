@@ -4,7 +4,7 @@ import { Navbar } from './components/nav/Navbar';
 import './globals.css';
 
 const varelaRound = Varela_Round({
-	weight: '400',
+	weight: ['400'],
 	subsets: ['latin'],
 	display: 'swap',
 	variable: '--font-varela-round',
