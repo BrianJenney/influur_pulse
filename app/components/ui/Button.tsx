@@ -1,7 +1,7 @@
-import { motion } from 'framer-motion';
+import { motion, HTMLMotionProps } from 'framer-motion';
 import clsx from 'clsx';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref'> {
 	variant?: 'primary' | 'secondary';
 	isLoading?: boolean;
 }
@@ -51,6 +51,7 @@ export function Button({
 
 	return (
 		<motion.button
+			type='button'
 			whileHover={{ scale: 1.02 }}
 			whileTap={{ scale: 0.98 }}
 			className={clsx(baseStyles, variantStyles[variant], className)}

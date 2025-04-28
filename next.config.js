@@ -5,12 +5,6 @@ const nextConfig = {
 			...config.resolve.alias,
 			'@': './',
 		};
-		config.images.remotePatterns = [
-			new URL('https://i.scdn.co/**'),
-			new URL(
-				'https://influur-uploads213904-dev.s3.us-east-2.amazonaws.com/**'
-			),
-		];
 		return config;
 	},
 	images: {

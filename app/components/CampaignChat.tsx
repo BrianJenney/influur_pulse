@@ -6,7 +6,7 @@ import { routes } from '@/app/api/routes';
 import { z } from 'zod';
 import { SongSearch } from './forms/SongSearch';
 import ReactMarkdown from 'react-markdown';
-import { type Message } from '@/app/lib/types';
+import { type Message } from '@/app/schemas/message';
 import { Spinner } from '@/app/components/ui/Spinner';
 import Image from 'next/image';
 

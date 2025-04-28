@@ -29,7 +29,7 @@ type UserReport = Pick<
 async function getFilteredInfluencers(
 	searchParams: SearchParams
 ): Promise<UserReport[]> {
-	const { gender, minPrice = '0', maxPrice = '1000000' } = await searchParams;
+	const { gender, minPrice = '0', maxPrice = '1000000' } = searchParams;
 
 	const minPriceNum = parseInt(minPrice);
 	const maxPriceNum = parseInt(maxPrice);
@@ -106,9 +106,10 @@ async function getFilteredInfluencers(
 export default async function InfluencerSearchPage({
 	searchParams,
 }: {
-	searchParams: SearchParams;
+	searchParams: Promise<SearchParams>;
 }) {
-	const influencers = await getFilteredInfluencers(searchParams);
+	const resolvedSearchParams = await searchParams;
+	const influencers = await getFilteredInfluencers(resolvedSearchParams);
 
 	return (
 		<div className='container mx-auto px-4 py-8'>
