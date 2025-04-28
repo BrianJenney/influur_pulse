@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { fetchRouteWithBody } from '@/app/api/routes';
 import { Form } from '@/app/components/forms/Form';
 import { searchSchema } from '@/app/schemas/search';
-import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 interface Song {
 	id: string;
@@ -42,14 +42,14 @@ export default function HomePage() {
 	};
 
 	return (
-		<div className='min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8'>
+		<div className='min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8'>
 			<div className='max-w-md w-full space-y-8'>
 				<div className='text-center'>
-					<h1 className='text-4xl font-extrabold text-orange-500'>
-						Welcome to Pulse
+					<h1 className='text-4xl font-semibold text-gray-800'>
+						Track what matters. Amplify what works.
 					</h1>
-					<p className='mt-2 text-sm text-gray-600'>
-						Search for your favorite songs
+					<p className='mt-4 text-sm text-gray-600'>
+						Start a campaign to amplify your music.
 					</p>
 				</div>
 

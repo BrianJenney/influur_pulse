@@ -1,19 +1,21 @@
 import { z } from 'zod';
 
 export type RouteConfig = {
-	url?: string;
-	path?: string;
-	method: string;
+	path: string;
+	method: 'GET' | 'POST' | 'PUT' | 'DELETE';
 	inputSchema: z.ZodTypeAny;
 	outputSchema: z.ZodTypeAny;
 	tags?: string[];
-	headers?: Record<string, string>;
+	headers?: Record<string, string> | null;
+	isExternal?: boolean;
 };
 
 export const routes = {
+	// Internal routes (relative to Next.js app)
 	SEARCH_SONGS: {
-		url: '/api/songs',
+		path: '/api/songs' as string,
 		method: 'POST',
+		isExternal: false,
 		inputSchema: z.object({
 			query: z.string(),
 		}),
@@ -28,40 +30,43 @@ export const routes = {
 			})
 		),
 	},
+
+	// External routes (using API_BASE_URL)
 	GET_CREATOR: {
 		path: '/pulse/creators/:id',
 		method: 'GET',
+		isExternal: true,
 		inputSchema: z.object({
 			id: z.number(),
 		}),
-		outputSchema: z.any(), // You can replace this with a more specific schema
-		headers: {
-			Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`,
-		},
+		outputSchema: z.any(),
+		tags: [],
 	},
-} as const satisfies Record<string, RouteConfig>;
+} satisfies Record<string, RouteConfig>;
 
 export async function fetchRouteWithBody<KEY extends keyof typeof routes>(
 	key: KEY,
 	input: z.infer<(typeof routes)[KEY]['inputSchema']>
 ): Promise<z.infer<(typeof routes)[KEY]['outputSchema']>> {
-	const config: RouteConfig = routes[key];
+	const config = routes[key];
 
-	// Determine the base URL and construct the full URL
+	// Construct the full URL based on whether the route is external or internal
 	let fullUrl: string;
-	if (config.url) {
-		fullUrl = config.url;
-	} else if (config.path) {
+	if (config.isExternal) {
 		if (!process.env.API_BASE_URL) {
 			throw new Error('API_BASE_URL environment variable is not set');
 		}
 		let urlPath = config.path;
-		if (urlPath.includes(':id') && 'id' in input) {
-			urlPath = urlPath.replace(':id', input.id.toString());
-		}
+		// Replace path parameters
+		Object.entries(input).forEach(([key, value]) => {
+			if (urlPath.includes(`:${key}`)) {
+				urlPath = urlPath.replace(`:${key}`, String(value));
+			}
+		});
 		fullUrl = new URL(urlPath, process.env.API_BASE_URL).toString();
 	} else {
-		throw new Error(`Route ${key} must have either url or path defined`);
+		// For internal routes, use the path as is
+		fullUrl = config.path;
 	}
 
 	// Prepare the request
@@ -69,16 +74,15 @@ export async function fetchRouteWithBody<KEY extends keyof typeof routes>(
 		method: config.method,
 		headers: {
 			'Content-Type': 'application/json',
-			...(config.headers || {}),
 		},
 	};
 
-	// Handle GET vs other methods
+	// Handle query parameters for GET requests
 	if (config.method === 'GET') {
 		const url = new URL(fullUrl);
 		Object.entries(input).forEach(([key, value]) => {
-			if (value !== undefined && key !== 'id') {
-				// Skip id as it's in the path
+			// Only add as query param if it's not a path parameter
+			if (value !== undefined && !config.path.includes(`:${key}`)) {
 				url.searchParams.append(key, String(value));
 			}
 		});
@@ -89,18 +93,15 @@ export async function fetchRouteWithBody<KEY extends keyof typeof routes>(
 
 	const response = await fetch(fullUrl, {
 		...requestInit,
-		next: {
-			tags: config.tags,
-		},
 	});
 
-	if (response.status === 200) {
-		return config.outputSchema.parse(await response.json());
+	if (!response.ok) {
+		throw new Error(
+			`${key} API (${fullUrl}) returned ${
+				response.status
+			}! ${await response.text()}`
+		);
 	}
 
-	throw new Error(
-		`${key} API (${fullUrl}) returned ${
-			response.status
-		}! ${await response.text()}`
-	);
+	return config.outputSchema.parse(await response.json());
 }

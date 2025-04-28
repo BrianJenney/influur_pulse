@@ -1,5 +1,5 @@
 import prisma from '@/app/libs/prisma';
-import { parsePriceRange } from '@/app/libs/utils/price';
+import { parsePriceRange } from '@/app/utils/price';
 import { prismaToPOJO } from '@/app/utils/nextjs';
 import { users_report } from '@prisma/client';
 

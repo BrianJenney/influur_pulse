@@ -1,15 +1,13 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Varela_Round } from 'next/font/google';
+import { Navbar } from './components/nav/Navbar';
 import './globals.css';
 
-const geistSans = Geist({
-	variable: '--font-geist-sans',
+const varelaRound = Varela_Round({
+	weight: '400',
 	subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-	variable: '--font-geist-mono',
-	subsets: ['latin'],
+	display: 'swap',
+	variable: '--font-varela-round',
 });
 
 export const metadata: Metadata = {
@@ -23,11 +21,10 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang='en'>
-			<body
-				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-			>
-				{children}
+		<html lang='en' className={varelaRound.className}>
+			<body>
+				<Navbar />
+				<main className='min-h-screen'>{children}</main>
 			</body>
 		</html>
 	);
