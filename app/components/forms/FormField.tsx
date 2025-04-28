@@ -3,6 +3,7 @@
 import { UseFormReturn } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 interface FormFieldProps<T extends Record<string, any>> {
 	form: UseFormReturn<T>;
 	name: keyof T;
@@ -29,6 +30,7 @@ const errorVariants = {
 	},
 };
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export function FormField<T extends Record<string, any>>({
 	form,
 	name,
