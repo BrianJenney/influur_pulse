@@ -1,121 +1,118 @@
-import prisma from '@/app/libs/prisma';
-import { parsePriceRange } from '@/app/utils/price';
-import { prismaToPOJO } from '@/app/utils/nextjs';
-import { users_report } from '@prisma/client';
-import Image from 'next/image';
+// TODO: Implement influencer search page when prisma is implemented for vercel
 
-type SearchParams = {
-	gender?: string;
-	minPrice?: string;
-	maxPrice?: string;
-};
+// import prisma from '@/app/libs/prisma';
+// import { parsePriceRange } from '@/app/utils/price';
+// import { prismaToPOJO } from '@/app/utils/nextjs';
+// import { users_report } from '@prisma/client';
 
-type UserReport = Pick<
-	users_report,
-	| 'id'
-	| 'user_id'
-	| 'user_name'
-	| 'full_name'
-	| 'gender'
-	| 'price'
-	| 'profile_pic'
-	| 'tiktok_followers'
-	| 'instagram_followers'
-	| 'youtube_followers'
-	| 'last_location'
-	| 'verified'
->;
+// type SearchParams = {
+// 	gender?: string;
+// 	minPrice?: string;
+// 	maxPrice?: string;
+// };
 
-async function getFilteredInfluencers(
-	searchParams: SearchParams
-): Promise<UserReport[]> {
-	const { gender, minPrice = '0', maxPrice = '1000000' } = searchParams;
+// type UserReport = Pick<
+// 	users_report,
+// 	| 'id'
+// 	| 'user_id'
+// 	| 'user_name'
+// 	| 'full_name'
+// 	| 'gender'
+// 	| 'price'
+// 	| 'profile_pic'
+// 	| 'tiktok_followers'
+// 	| 'instagram_followers'
+// 	| 'youtube_followers'
+// 	| 'last_location'
+// 	| 'verified'
+// >;
 
-	const minPriceNum = parseInt(minPrice);
-	const maxPriceNum = parseInt(maxPrice);
+// async function getFilteredInfluencers(
+// 	searchParams: SearchParams
+// ): Promise<UserReport[]> {
+// 	const { gender, minPrice = '0', maxPrice = '1000000' } = searchParams;
 
-	const potentialInfluencers = await prismaToPOJO(
-		prisma.users_report.findMany({
-			where: {
-				brand: false,
-				gender: gender
-					? {
-							equals: gender,
-					  }
-					: undefined,
-				deleted: false,
-			},
-			select: {
-				id: true,
-				user_id: true,
-				user_name: true,
-				full_name: true,
-				gender: true,
-				price: true,
-				profile_pic: true,
-				tiktok_followers: true,
-				instagram_followers: true,
-				youtube_followers: true,
-				last_location: true,
-				verified: true,
-			},
-			// Increase the initial pool size to allow for better filtering
-			take: 100,
-		})
-	);
+// 	const minPriceNum = parseInt(minPrice);
+// 	const maxPriceNum = parseInt(maxPrice);
 
-	// Filter influencers based on price range
-	const priceFilteredInfluencers = potentialInfluencers.filter(
-		(influencer) => {
-			if (
-				!influencer.price ||
-				influencer.price.toLowerCase() === 'unknown'
-			) {
-				return true;
-			}
+// 	const potentialInfluencers = await prismaToPOJO(
+// 		prisma.users_report.findMany({
+// 			where: {
+// 				brand: false,
+// 				gender: gender
+// 					? {
+// 							equals: gender,
+// 					  }
+// 					: undefined,
+// 				deleted: false,
+// 			},
+// 			select: {
+// 				id: true,
+// 				user_id: true,
+// 				user_name: true,
+// 				full_name: true,
+// 				gender: true,
+// 				price: true,
+// 				profile_pic: true,
+// 				tiktok_followers: true,
+// 				instagram_followers: true,
+// 				youtube_followers: true,
+// 				last_location: true,
+// 				verified: true,
+// 			},
+// 			// Increase the initial pool size to allow for better filtering
+// 			take: 100,
+// 		})
+// 	);
 
-			const priceRange = parsePriceRange(influencer.price);
-			if (!priceRange) return true;
+// 	// Filter influencers based on price range
+// 	const priceFilteredInfluencers = potentialInfluencers.filter(
+// 		(influencer) => {
+// 			if (
+// 				!influencer.price ||
+// 				influencer.price.toLowerCase() === 'unknown'
+// 			) {
+// 				return true;
+// 			}
 
-			return (
-				priceRange.min <= maxPriceNum && priceRange.max >= minPriceNum
-			);
-		}
-	);
+// 			const priceRange = parsePriceRange(influencer.price);
+// 			if (!priceRange) return true;
 
-	// Sort by follower count (prioritize those with more followers)
-	const sortedInfluencers = priceFilteredInfluencers.sort(
-		(a: UserReport, b: UserReport) => {
-			const aFollowers = Math.max(
-				parseInt(a.tiktok_followers?.replace(/,/g, '') || '0'),
-				parseInt(a.instagram_followers?.replace(/,/g, '') || '0'),
-				parseInt(a.youtube_followers?.replace(/,/g, '') || '0')
-			);
-			const bFollowers = Math.max(
-				parseInt(b.tiktok_followers?.replace(/,/g, '') || '0'),
-				parseInt(b.instagram_followers?.replace(/,/g, '') || '0'),
-				parseInt(b.youtube_followers?.replace(/,/g, '') || '0')
-			);
-			return bFollowers - aFollowers;
-		}
-	);
+// 			return (
+// 				priceRange.min <= maxPriceNum && priceRange.max >= minPriceNum
+// 			);
+// 		}
+// 	);
 
-	return sortedInfluencers.slice(0, 20);
-}
+// 	// Sort by follower count (prioritize those with more followers)
+// 	const sortedInfluencers = priceFilteredInfluencers.sort(
+// 		(a: UserReport, b: UserReport) => {
+// 			const aFollowers = Math.max(
+// 				parseInt(a.tiktok_followers?.replace(/,/g, '') || '0'),
+// 				parseInt(a.instagram_followers?.replace(/,/g, '') || '0'),
+// 				parseInt(a.youtube_followers?.replace(/,/g, '') || '0')
+// 			);
+// 			const bFollowers = Math.max(
+// 				parseInt(b.tiktok_followers?.replace(/,/g, '') || '0'),
+// 				parseInt(b.instagram_followers?.replace(/,/g, '') || '0'),
+// 				parseInt(b.youtube_followers?.replace(/,/g, '') || '0')
+// 			);
+// 			return bFollowers - aFollowers;
+// 		}
+// 	);
 
-export default async function InfluencerSearchPage({
-	searchParams,
-}: {
-	searchParams: Promise<SearchParams>;
-}) {
-	const resolvedSearchParams = await searchParams;
-	const influencers = await getFilteredInfluencers(resolvedSearchParams);
+// 	return sortedInfluencers.slice(0, 20);
+// }
+
+export default async function InfluencerSearchPage() {
+	// const resolvedSearchParams = await searchParams;
+	// const influencers = await getFilteredInfluencers(resolvedSearchParams);
 
 	return (
 		<div className='container mx-auto px-4 py-8'>
 			<h1 className='text-3xl font-bold mb-8'>Find Influencers</h1>
 
-			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+			{/* <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
 				{influencers.map((influencer) => (
 					<div
 						key={influencer.id.toString()}
@@ -188,7 +185,7 @@ export default async function InfluencerSearchPage({
 						)}
 					</div>
 				))}
-			</div>
+			</div> */}
 		</div>
 	);
 }
