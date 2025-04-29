@@ -16,7 +16,17 @@ function createPrismaClient() {
 	return prisma.$extends({
 		query: {
 			$allModels: {
-				$allOperations: async ({ model, operation, args, query }) => {
+				$allOperations: async ({
+					model,
+					operation,
+					args,
+					query,
+				}: {
+					model: string;
+					operation: string;
+					args: unknown;
+					query: (args: unknown) => Promise<unknown>;
+				}) => {
 					return backOff(() => query(args), {
 						retry: (error) => {
 							const code = error?.code;
